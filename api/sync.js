@@ -28,6 +28,8 @@ export default async function handler(req,res){
   try{
     const results=await Promise.all(profiles.map(getProfile));
     const sql=neon(connection);
+    await sql`DELETE FROM learners WHERE username='AmyCritten3' AND EXISTS (SELECT 1 FROM learners WHERE username='Amy Crittenden')`;
+    await sql`DELETE FROM learners WHERE username='Hollandlopguy' AND EXISTS (SELECT 1 FROM learners WHERE username='Davy Crittenden')`;
     await sql`UPDATE learners SET username='AmyCritten3' WHERE username='Amy Crittenden'`;
     await sql`UPDATE learners SET username='Hollandlopguy' WHERE username='Davy Crittenden'`;
     for(const p of results)await sql`UPDATE learners SET xp=${p.xp},streak=${p.streak},updated_at=NOW() WHERE username=${p.username}`;
