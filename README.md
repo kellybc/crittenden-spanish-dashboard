@@ -12,7 +12,7 @@ Then open `http://localhost:4173`.
 
 ## Data
 
-The “Add update” form stores progress in the current browser using `localStorage`. This is intentionally a no-account prototype. For shared, cross-device updates, connect the same UI to Supabase or another hosted database.
+Progress is shared across devices through a Vercel Function and Neon Postgres. Reads are public; writes require the family PIN stored in Vercel as `UPDATE_PIN`. Tables and learner seed rows are created automatically on the first request.
 
 ## Deploy
 
