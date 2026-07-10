@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="The Crittenden family's Spanish learning journey." />
+  <title>¡Vamos, Crittendens! — Spanish Learning Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="site-header">
+    <a class="brand" href="#"><span class="brand-mark">¡V!</span><span>Vamos, Crittendens</span></a>
+    <nav><a href="#family">Family</a><a href="#insights">Insights</a><button class="button button-compact" id="openEntry">＋ Add update</button></nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow"><span class="live-dot"></span> OUR SPANISH JOURNEY</div>
+      <div class="hero-grid">
+        <div><h1>Pequeños pasos.<br><em>Grandes aventuras.</em></h1><p>We’re learning Spanish together—one lesson, one streak, and one brave conversation at a time.</p><div class="hero-actions"><button class="button" id="openEntryHero">Log today’s progress <span>→</span></button><a href="#family">Meet the learners ↓</a></div></div>
+        <div class="hero-visual" aria-label="Family learning illustration">
+          <div class="orbit orbit-a"><span>hola</span></div><div class="orbit orbit-b"><span>gracias</span></div>
+          <div class="globe"><div class="globe-lines"></div><span>ñ</span></div>
+          <div class="streak-float">🔥 <strong id="heroStreak">18</strong><small>day best streak</small></div>
+          <div class="xp-float"><strong id="heroXp">5,840</strong><small>family XP</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-strip" aria-label="Family summary">
+      <article><span class="stat-icon purple">✦</span><div><strong id="totalXp">5,840</strong><small>Total XP earned</small></div></article>
+      <article><span class="stat-icon orange">🔥</span><div><strong id="activeStreak">18 days</strong><small>Longest active streak</small></div></article>
+      <article><span class="stat-icon green">✓</span><div><strong id="totalLessons">142</strong><small>Lessons completed</small></div></article>
+      <article><span class="stat-icon blue">◫</span><div><strong id="wordsLearned">486</strong><small>Spanish words learned</small></div></article>
+    </section>
+
+    <section class="section" id="family">
+      <div class="section-heading"><div><span class="kicker">THE CREW</span><h2>Meet our language learners</h2></div><p>Everyone moves at their own pace.<br>Every lesson counts.</p></div>
+      <div class="member-grid" id="memberGrid"></div>
+    </section>
+
+    <section class="section insight-section" id="insights">
+      <div class="section-heading"><div><span class="kicker">THE BIG PICTURE</span><h2>Our month in Spanish</h2></div><div class="range-pill">Last 6 weeks</div></div>
+      <div class="insight-grid">
+        <article class="panel chart-panel"><div class="panel-title"><div><h3>Family XP</h3><p>Weekly learning momentum</p></div><strong class="trend">↗ 12%</strong></div><div class="chart" id="chart"></div><div class="chart-labels"><span>Jun 1</span><span>Jun 8</span><span>Jun 15</span><span>Jun 22</span><span>Jun 29</span><span>Jul 6</span></div></article>
+        <article class="panel leaderboard"><div class="panel-title"><div><h3>Friendly leaderboard</h3><p>This week’s XP</p></div><span>🏆</span></div><div id="leaderboard"></div></article>
+        <article class="panel goals"><div class="panel-title"><div><h3>Family goals</h3><p>July progress</p></div><span>🎯</span></div><div class="goal-row"><div><span>Complete 100 lessons</span><strong id="goalLessons">68 / 100</strong></div><div class="progress"><i id="lessonProgress"></i></div></div><div class="goal-row"><div><span>Learn 600 new words</span><strong id="goalWords">486 / 600</strong></div><div class="progress"><i id="wordProgress"></i></div></div><blockquote>“Poco a poco se llega lejos.”<small>Little by little, one goes far.</small></blockquote></article>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="brand"><span class="brand-mark">¡V!</span><span>Vamos, Crittendens</span></div><p>Hecho con amor, curiosity &amp; a little competitive spirit. 💛</p><span>Updated <time id="lastUpdated">today</time></span></footer>
+
+  <dialog id="entryDialog"><form method="dialog" id="entryForm"><button class="close" value="cancel" aria-label="Close">×</button><span class="kicker">QUICK UPDATE</span><h2>Log today’s progress</h2><p>Enter the latest totals from each learner’s Duolingo profile.</p><label>Learner<select id="memberSelect" required></select></label><div class="form-grid"><label>Total XP<input id="xpInput" type="number" min="0" required></label><label>Current streak<input id="streakInput" type="number" min="0" required></label><label>Lessons completed<input id="lessonsInput" type="number" min="0" required></label><label>Words learned<input id="wordsInput" type="number" min="0" required></label></div><button class="button submit" value="default">Save progress <span>→</span></button><small class="privacy-note">🔒 Saved only in this browser for now.</small></form></dialog>
+  <script src="app.js"></script>
+</body>
+</html>
