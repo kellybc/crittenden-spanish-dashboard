@@ -28,11 +28,13 @@ export default async function handler(req,res){
   try{
     const results=await Promise.all(profiles.map(getProfile));
     const sql=neon(connection);
+    await sql`CREATE TABLE IF NOT EXISTS profile_snapshots (id BIGSERIAL PRIMARY KEY, username TEXT NOT NULL REFERENCES learners(username), xp INTEGER NOT NULL, streak INTEGER NOT NULL, captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
     await sql`DELETE FROM learners WHERE username='AmyCritten3' AND EXISTS (SELECT 1 FROM learners WHERE username='Amy Crittenden')`;
     await sql`DELETE FROM learners WHERE username='Hollandlopguy' AND EXISTS (SELECT 1 FROM learners WHERE username='Davy Crittenden')`;
     await sql`UPDATE learners SET username='AmyCritten3' WHERE username='Amy Crittenden'`;
     await sql`UPDATE learners SET username='Hollandlopguy' WHERE username='Davy Crittenden'`;
     for(const p of results)await sql`UPDATE learners SET xp=${p.xp},streak=${p.streak},updated_at=NOW() WHERE username=${p.username}`;
+    for(const p of results)await sql`INSERT INTO profile_snapshots (username,xp,streak) VALUES (${p.username},${p.xp},${p.streak})`;
     const total=results.reduce((sum,p)=>sum+p.xp,0),kelly=results[0];
     await sql`INSERT INTO progress_history (username,xp,streak,lessons,words,total_xp) VALUES (${kelly.username},${kelly.xp},${kelly.streak},0,0,${total})`;
     return res.status(200).json({ok:true,syncedAt:new Date().toISOString(),profiles:results});

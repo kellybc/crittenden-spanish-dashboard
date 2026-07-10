@@ -34,10 +34,11 @@ Do not replace usernames with Duolingo display names. Duolingo's public lookup r
 
 ## Data and API behavior
 
-Neon Postgres stores two tables, created automatically by `api/progress.js`:
+Neon Postgres stores three tables, created automatically by `api/progress.js`:
 
 - `learners`: current XP, streak, lesson count, word count, and display metadata.
-- `progress_history`: historical family XP snapshots used by the chart.
+- `progress_history`: historical family XP snapshots used by the cumulative chart.
+- `profile_snapshots`: timestamped per-person Spanish XP and streak values used for weekly and daily gains.
 
 `GET /api/progress` is public because the dashboard is public.
 
@@ -52,6 +53,8 @@ Database credentials are provided by the Vercel Neon integration, normally throu
 Duolingo does not provide a supported public family-progress API. The project uses the unofficial public profile endpoint:
 
 `https://www.duolingo.com/2017-06-30/users?username=<username>`
+
+The movie-night challenge runs Friday 8:00 AM Central to Friday 8:00 AM Central. Weekly XP is current Spanish XP minus the closest recorded Friday baseline; cumulative XP is never reset.
 
 The daily Vercel cron runs `/api/sync` at `0 12 * * *` (approximately 7–8 AM Central, depending on daylight saving time and Vercel's Hobby scheduling window).
 

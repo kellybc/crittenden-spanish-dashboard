@@ -12,7 +12,7 @@ Then open `http://localhost:4173`.
 
 ## Data
 
-Progress is shared across devices through a Vercel Function and Neon Postgres. Reads are public; writes require the family PIN stored in Vercel as `UPDATE_PIN`. Tables and learner seed rows are created automatically on the first request.
+Progress is shared across devices through a Vercel Function and Neon Postgres. Reads are public; writes require the family PIN stored in Vercel as `UPDATE_PIN`. Tables and learner seed rows are created automatically on the first request. Per-person snapshots power a Friday 8:00 AM Central movie-night challenge leaderboard while cumulative XP and daily history remain intact.
 
 ## Deploy
 
