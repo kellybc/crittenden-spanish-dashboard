@@ -3,9 +3,9 @@ import { timingSafeEqual } from 'node:crypto';
 
 const seed = [
   ['Kelly','Kelly_B_C','K','#7658d5','#eee9fb'],
-  ['Amy','Amy Crittenden','A','#23a566','#e2f5ea'],
+  ['Amy','AmyCritten3','A','#23a566','#e2f5ea'],
   ['John Kelly','jklions','JK','#ef8438','#fcebdd'],
-  ['Davy','Davy Crittenden','D','#418bc7','#e2f0fa']
+  ['Davy','Hollandlopguy','D','#418bc7','#e2f0fa']
 ];
 const connection = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 const safePin = input => {

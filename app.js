@@ -1,8 +1,8 @@
 const starter = [
   {name:'Kelly', username:'Kelly_B_C', emoji:'K', xp:0, streak:0, lessons:0, words:0, accent:'#7658d5', soft:'#eee9fb'},
-  {name:'Amy', username:'Amy Crittenden', emoji:'A', xp:0, streak:0, lessons:0, words:0, accent:'#23a566', soft:'#e2f5ea'},
+  {name:'Amy', username:'AmyCritten3', emoji:'A', xp:0, streak:0, lessons:0, words:0, accent:'#23a566', soft:'#e2f5ea'},
   {name:'John Kelly', username:'jklions', emoji:'JK', xp:0, streak:0, lessons:0, words:0, accent:'#ef8438', soft:'#fcebdd'},
-  {name:'Davy', username:'Davy Crittenden', emoji:'D', xp:0, streak:0, lessons:0, words:0, accent:'#418bc7', soft:'#e2f0fa'}
+  {name:'Davy', username:'Hollandlopguy', emoji:'D', xp:0, streak:0, lessons:0, words:0, accent:'#418bc7', soft:'#e2f0fa'}
 ];
 let members=starter, history=[];
 const $=s=>document.querySelector(s), fmt=n=>Number(n).toLocaleString();
