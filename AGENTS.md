@@ -34,11 +34,12 @@ Do not replace usernames with Duolingo display names. Duolingo's public lookup r
 
 ## Data and API behavior
 
-Neon Postgres stores three tables, created automatically by `api/progress.js`:
+Neon Postgres stores dashboard tables created automatically by `api/progress.js` and `api/sync.js`:
 
 - `learners`: current XP, streak, lesson count, word count, and display metadata.
 - `progress_history`: historical family XP snapshots used by the cumulative chart.
 - `profile_snapshots`: timestamped per-person Spanish XP and streak values used for weekly and daily gains.
+- `course_snapshots`: timestamped per-person, per-course XP values used to separate weekly Spanish, other-language, and Chess activity.
 
 `GET /api/progress` is public because the dashboard is public.
 
@@ -62,6 +63,7 @@ The sync imports:
 
 - Spanish-course XP, not total XP across every language.
 - Current account streak.
+- XP totals for every course returned by Duolingo. Spanish remains the only course counted in the movie-night challenge.
 
 Duolingo does not reliably expose completed lesson, learned-word, or achievement totals. The public page displays only automatically sourced XP and streak metrics, including derived weekly XP. Preserve the legacy lesson and word database values during automatic sync, and keep the PIN-protected API update available as an operational fallback because the unofficial endpoint may change or become rate-limited.
 

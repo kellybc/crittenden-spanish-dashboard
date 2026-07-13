@@ -14,6 +14,8 @@ async function setup(sql){
   await sql`CREATE TABLE IF NOT EXISTS learners (username TEXT PRIMARY KEY, name TEXT NOT NULL, emoji TEXT NOT NULL, accent TEXT NOT NULL, soft TEXT NOT NULL, xp INTEGER NOT NULL DEFAULT 0, streak INTEGER NOT NULL DEFAULT 0, lessons INTEGER NOT NULL DEFAULT 0, words INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
   await sql`CREATE TABLE IF NOT EXISTS progress_history (id BIGSERIAL PRIMARY KEY, username TEXT NOT NULL REFERENCES learners(username), xp INTEGER NOT NULL, streak INTEGER NOT NULL, lessons INTEGER NOT NULL, words INTEGER NOT NULL, total_xp INTEGER NOT NULL DEFAULT 0, recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
   await sql`CREATE TABLE IF NOT EXISTS profile_snapshots (id BIGSERIAL PRIMARY KEY, username TEXT NOT NULL REFERENCES learners(username), xp INTEGER NOT NULL, streak INTEGER NOT NULL, captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
+  await sql`CREATE TABLE IF NOT EXISTS course_snapshots (id BIGSERIAL PRIMARY KEY, username TEXT NOT NULL REFERENCES learners(username), course_id TEXT NOT NULL, title TEXT NOT NULL, learning_language TEXT NOT NULL, xp INTEGER NOT NULL, captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
+  await sql`CREATE INDEX IF NOT EXISTS course_snapshots_course_time ON course_snapshots(username,course_id,captured_at DESC)`;
   await sql`CREATE TABLE IF NOT EXISTS sync_state (id SMALLINT PRIMARY KEY CHECK (id=1), last_started_at TIMESTAMPTZ, last_completed_at TIMESTAMPTZ)`;
   await sql`INSERT INTO sync_state (id) VALUES (1) ON CONFLICT (id) DO NOTHING`;
   for(const p of profiles)await sql`INSERT INTO learners (name,username,emoji,accent,soft) VALUES (${p.name},${p.username},${p.emoji},${p.accent},${p.soft}) ON CONFLICT (username) DO NOTHING`;
@@ -24,9 +26,10 @@ async function getProfile(profile){
   const response=await fetch(url,{headers:{'user-agent':'CrittendenFamilyDashboard/1.0'},signal:AbortSignal.timeout(10000)});
   if(!response.ok)throw new Error(`Duolingo returned ${response.status} for ${profile.name}`);
   const user=(await response.json()).users?.[0];
-  const spanish=user?.courses?.find(course=>course.learningLanguage==='es');
+  const courses=(user?.courses||[]).filter(course=>course.id&&Number.isFinite(Number(course.xp))).map(course=>({courseId:String(course.id),title:String(course.title||course.learningLanguage||'Course'),learningLanguage:String(course.learningLanguage||'unknown'),xp:Math.max(0,Math.trunc(Number(course.xp)))}));
+  const spanish=courses.find(course=>course.learningLanguage==='es');
   if(!user||!spanish)throw new Error(`Spanish profile not found for ${profile.name}`);
-  return {...profile,xp:Number(spanish.xp||0),streak:Number(user.streak||0)};
+  return {...profile,xp:spanish.xp,streak:Number(user.streak||0),courses};
 }
 
 export default async function handler(req,res){
@@ -53,12 +56,13 @@ export default async function handler(req,res){
     if(!results.length)throw new Error('No Duolingo profiles could be refreshed');
     for(const p of results)await sql`UPDATE learners SET xp=${p.xp},streak=${p.streak},updated_at=NOW() WHERE username=${p.username}`;
     for(const p of results)await sql`INSERT INTO profile_snapshots (username,xp,streak) VALUES (${p.username},${p.xp},${p.streak})`;
+    for(const p of results)for(const course of p.courses)await sql`INSERT INTO course_snapshots (username,course_id,title,learning_language,xp) VALUES (${p.username},${course.courseId},${course.title},${course.learningLanguage},${course.xp})`;
     const totals=await sql`SELECT COALESCE(SUM(xp),0)::INTEGER total_xp FROM learners`;
     const first=results[0];
     await sql`INSERT INTO progress_history (username,xp,streak,lessons,words,total_xp) VALUES (${first.username},${first.xp},${first.streak},0,0,${totals[0].total_xp})`;
     const completed=await sql`UPDATE sync_state SET last_completed_at=NOW() WHERE id=1 RETURNING last_completed_at`;
     const failed=settled.length-results.length;
-    return res.status(200).json({ok:true,syncedAt:completed[0].last_completed_at,updated:results.length,failed});
+    return res.status(200).json({ok:true,syncedAt:completed[0].last_completed_at,updated:results.length,courses:results.reduce((sum,p)=>sum+p.courses.length,0),failed});
   }catch(error){
     console.error(error);
     return res.status(502).json({error:'Duolingo could not be reached. The last saved stats are still displayed.'});

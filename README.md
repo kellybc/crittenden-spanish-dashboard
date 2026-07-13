@@ -16,6 +16,8 @@ Progress is shared across devices through Vercel Functions and Neon Postgres. Th
 
 Duolingo's public profile response supplies Spanish XP and current streak, but not reliable completed-lesson, learned-word, or achievement totals. The public dashboard therefore uses only automatically sourced XP and streak metrics. The PIN-protected progress write endpoint remains available as an operational fallback, but the webpage has no manual-entry workflow.
 
+Each sync also snapshots every course returned by Duolingo, using the stable course ID to keep Spanish, other languages, and Chess separate. The movie-night leaderboard remains Spanish-only; the all-course panel reports weekly XP for every available course.
+
 ## Deploy
 
 Import this repository at Vercel. No build command is required; the project is a static site. Add the deployed URL to Wix as a menu link or embed it in a full-width iframe.
