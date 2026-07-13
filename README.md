@@ -12,7 +12,9 @@ Then open `http://localhost:4173`.
 
 ## Data
 
-Progress is shared across devices through a Vercel Function and Neon Postgres. Reads are public; writes require the family PIN stored in Vercel as `UPDATE_PIN`. Tables and learner seed rows are created automatically on the first request. Per-person snapshots power a Friday 8:00 AM Central movie-night challenge leaderboard while cumulative XP and daily history remain intact.
+Progress is shared across devices through Vercel Functions and Neon Postgres. The page requests a rate-limited Duolingo sync when it opens, offers a **Sync now** button, and refreshes every 15 minutes while open. The daily Vercel cron remains a backstop. Per-person snapshots power a Friday 8:00 AM Central movie-night challenge leaderboard while cumulative XP and daily history remain intact.
+
+Duolingo's public profile response supplies Spanish XP and current streak, but not reliable completed-lesson, learned-word, or achievement totals. The public dashboard therefore uses only automatically sourced XP and streak metrics. The PIN-protected progress write endpoint remains available as an operational fallback, but the webpage has no manual-entry workflow.
 
 ## Deploy
 

@@ -4,17 +4,17 @@ const starter = [
   {name:'John Kelly', username:'jklions', emoji:'JK', xp:0, streak:0, lessons:0, words:0, accent:'#ef8438', soft:'#fcebdd'},
   {name:'Davy', username:'Hollandlopguy', emoji:'D', xp:0, streak:0, lessons:0, words:0, accent:'#418bc7', soft:'#e2f0fa'}
 ];
-let members=starter, history=[], weekly=[], daily=[];
+let members=starter, history=[], weekly=[], daily=[], lastRefresh=0;
 const $=s=>document.querySelector(s), fmt=n=>Number(n).toLocaleString();
 function render(){
   const ranked=[...members].sort((a,b)=>b.xp-a.xp);
-  $('#memberGrid').innerHTML=ranked.map((m,i)=>`<article class="member-card" style="--accent:${m.accent};--soft:${m.soft}"><div class="card-top"><div class="avatar">${m.emoji}</div><span class="rank">#${i+1}</span></div><h3>${m.name}</h3><span class="username">@${m.username}</span><span class="level">Spanish learner · ${m.streak?'On a roll':'Getting started'}</span><div class="member-stats"><div><strong>${fmt(m.xp)}</strong><small>Total XP</small></div><div><strong>🔥 ${m.streak}</strong><small>Day streak</small></div><div><strong>${m.lessons}</strong><small>Lessons</small></div><div><strong>${m.words}</strong><small>Words</small></div></div></article>`).join('');
+  const weeklyByUser=new Map(weekly.map(m=>[m.username,Number(m.weekly_xp)]));
+  $('#memberGrid').innerHTML=ranked.map((m,i)=>`<article class="member-card" style="--accent:${m.accent};--soft:${m.soft}"><div class="card-top"><div class="avatar">${m.emoji}</div><span class="rank">#${i+1}</span></div><h3>${m.name}</h3><span class="username">@${m.username}</span><span class="level">Spanish learner · ${m.streak?'On a roll':'Getting started'}</span><div class="member-stats"><div><strong>${fmt(m.xp)}</strong><small>Total XP</small></div><div><strong>🔥 ${m.streak}</strong><small>Day streak</small></div><div><strong>${fmt(weeklyByUser.get(m.username)||0)}</strong><small>XP this week</small></div><div><strong>${m.streak>0?'Active':'Start today'}</strong><small>Practice status</small></div></div></article>`).join('');
   $('#leaderboard').innerHTML=ranked.map((m,i)=>`<div class="leader-row"><span>${['🥇','🥈','🥉','4'][i]||i+1}</span><div class="mini-person"><span class="mini-avatar" style="background:${m.soft};color:${m.accent}">${m.emoji}</span><div><strong>${m.name}</strong><br><small>${m.streak} day streak</small></div></div><strong>${fmt(m.xp)} XP</strong></div>`).join('');
-  const sums=k=>members.reduce((t,m)=>t+Number(m[k]),0),xp=sums('xp'),lessons=sums('lessons'),words=sums('words'),streak=Math.max(...members.map(m=>m.streak));
-  $('#totalXp').textContent=fmt(xp);$('#heroXp').textContent=fmt(xp);$('#activeStreak').textContent=`${streak} days`;$('#heroStreak').textContent=streak;$('#totalLessons').textContent=fmt(lessons);$('#wordsLearned').textContent=fmt(words);
-  $('#goalLessons').textContent=`${lessons} / 200`;$('#lessonProgress').style.width=`${Math.min(100,lessons/2)}%`;$('#goalWords').textContent=`${words} / 600`;$('#wordProgress').style.width=`${Math.min(100,words/6)}%`;
-  $('#memberSelect').innerHTML=members.map((m,i)=>`<option value="${i}">${m.name}</option>`).join('');
-  const dates=members.map(m=>new Date(m.updated_at||0).getTime()).filter(Boolean);$('#lastUpdated').textContent=dates.length?new Date(Math.max(...dates)).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'today';
+  const sums=k=>members.reduce((t,m)=>t+Number(m[k]),0),xp=sums('xp'),weekXp=weekly.reduce((t,m)=>t+Number(m.weekly_xp),0),streak=Math.max(...members.map(m=>m.streak)),active=members.filter(m=>m.streak>0).length;
+  $('#totalXp').textContent=fmt(xp);$('#heroXp').textContent=fmt(xp);$('#activeStreak').textContent=`${streak} days`;$('#heroStreak').textContent=streak;$('#weeklyXp').textContent=fmt(weekXp);$('#activeLearners').textContent=`${active} of ${members.length}`;
+  $('#goalWeeklyXp').textContent=`${fmt(weekXp)} / 1,000 XP`;$('#weeklyXpProgress').style.width=`${Math.min(100,weekXp/10)}%`;$('#goalStreak').textContent=`${Math.min(streak,7)} / 7 days`;$('#streakProgress').style.width=`${Math.min(100,streak/7*100)}%`;
+  const dates=members.map(m=>new Date(m.updated_at||0).getTime()).filter(Boolean),latest=dates.length?Math.max(...dates):0;lastRefresh=latest;$('#lastUpdated').textContent=latest?new Date(latest).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'today';
   renderChart();renderWeekly();
 }
 function renderChart(){
@@ -31,14 +31,14 @@ function renderWeekly(){
   $('#weeklyHeadline').textContent=leader.weekly_xp>0?`${leader.name} is choosing the treat—for now!`:'A fresh challenge is underway!';
   const end=new Date(weekly[0].ends_at),days=Math.max(0,Math.ceil((end-Date.now())/86400000));
   $('#challengeCountdown').textContent=`${days} day${days===1?'':'s'} left · ${end.toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'})}`;
-}function fillForm(){const m=members[Number($('#memberSelect').value)];['xp','streak','lessons','words'].forEach(k=>$(`#${k}Input`).value=m[k])}
-function openDialog(){fillForm();$('#formMessage').textContent='';$('#entryDialog').showModal()}
+}
 async function loadShared(){try{const r=await fetch('/api/progress',{cache:'no-store'});if(!r.ok)throw new Error();const data=await r.json();members=data.members;history=data.history||[];weekly=data.weekly||[];daily=data.daily||[];render()}catch{render()}}
-$('#openEntry').onclick=openDialog;$('#openEntryHero').onclick=openDialog;$('#memberSelect').onchange=fillForm;
-$('#entryForm').addEventListener('submit',async e=>{
-  if(e.submitter?.value==='cancel')return;e.preventDefault();const button=e.submitter,i=Number($('#memberSelect').value);
-  button.disabled=true;button.firstChild.textContent='Saving… ';$('#formMessage').textContent='';
-  const update={username:members[i].username,pin:$('#pinInput').value};['xp','streak','lessons','words'].forEach(k=>update[k]=Number($( `#${k}Input`).value));
-  try{const r=await fetch('/api/progress',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(update)});const data=await r.json();if(!r.ok)throw new Error(data.error||'Could not save');members=data.members;history=data.history||[];weekly=data.weekly||[];daily=data.daily||[];render();$('#pinInput').value='';$('#entryDialog').close()}catch(err){$('#formMessage').textContent=err.message}finally{button.disabled=false;button.firstChild.textContent='Save for everyone '}
-});
-render();loadShared();
+async function syncNow(showMessage=true){
+  const buttons=[...document.querySelectorAll('[data-sync]')],status=$('#syncStatus');buttons.forEach(button=>button.disabled=true);if(showMessage)status.textContent='Checking Duolingo…';
+  try{const r=await fetch('/api/sync',{method:'POST'}),result=await r.json();if(!r.ok&&r.status!==429)throw new Error(result.error||'Refresh failed');await loadShared();if(showMessage)status.textContent=r.status===429?'Already up to date.':result.failed?`Updated ${result.updated} of ${members.length} profiles.`:'Stats are up to date!'}catch(error){if(showMessage)status.textContent=error.message}finally{buttons.forEach(button=>button.disabled=false)}
+}
+document.querySelectorAll('[data-sync]').forEach(button=>button.addEventListener('click',()=>syncNow(true)));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastRefresh>15*60*1000)syncNow(false)});
+setInterval(()=>syncNow(false),15*60*1000);
+async function init(){render();await loadShared();await syncNow(false)}
+init();

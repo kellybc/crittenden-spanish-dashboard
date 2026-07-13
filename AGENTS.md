@@ -44,7 +44,7 @@ Neon Postgres stores three tables, created automatically by `api/progress.js`:
 
 `POST /api/progress` requires the family update PIN in the JSON body. Never hard-code or commit this PIN. It is stored in Vercel as the sensitive `UPDATE_PIN` environment variable.
 
-`GET /api/sync` is used by Vercel Cron and requires the server-only `CRON_SECRET` bearer token. `POST /api/sync` accepts the family PIN for an authorized manual sync. Never expose `CRON_SECRET`, database URLs, or PIN values in client-side files, logs, commits, or responses.
+`GET /api/sync` is used by Vercel Cron and requires the server-only `CRON_SECRET` bearer token. `POST /api/sync` provides a public, five-minute-rate-limited on-demand refresh for the dashboard. Never expose `CRON_SECRET`, database URLs, or PIN values in client-side files, logs, commits, or responses.
 
 Database credentials are provided by the Vercel Neon integration, normally through `DATABASE_URL` and `POSTGRES_URL`.
 
@@ -63,7 +63,7 @@ The sync imports:
 - Spanish-course XP, not total XP across every language.
 - Current account streak.
 
-Duolingo does not reliably expose completed lesson or learned-word totals. Preserve those database values during automatic sync; they remain manually editable. Keep manual updates available as a fallback because the unofficial endpoint may change or become rate-limited.
+Duolingo does not reliably expose completed lesson, learned-word, or achievement totals. The public page displays only automatically sourced XP and streak metrics, including derived weekly XP. Preserve the legacy lesson and word database values during automatic sync, and keep the PIN-protected API update available as an operational fallback because the unofficial endpoint may change or become rate-limited.
 
 ## Local development
 
